@@ -270,6 +270,18 @@ class Client1C:
             )
         result = self._exec_rac(command)
         return result
+    
+    def get_cluster_licenses(self) -> ListRac:
+        """Получить список всех лицензий кластера (без привязки к конкретной ИБ)."""
+        command = "session --cluster={} list {} --licenses".format(
+            self.cluster_id, self.hostname
+        )
+        if self.cls_user and self.cls_pwd:
+            command += " --cluster-user={} --cluster-pwd={}".format(
+                self.cls_user, self.cls_pwd
+            )
+        result = self._exec_rac(command)
+        return result
 
     def get_db_info(
         self,

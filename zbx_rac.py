@@ -61,6 +61,13 @@ def licenses(args):
     result = Counter([x["short-presentation"] for x in lic])
     return result
 
+@UserDecorators.to_json
+def total_licenses(args):
+    """Возвращает общее количество лицензий во всех базах кластера."""
+    server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
+    lic = server.get_cluster_licenses()
+    return len(lic)
+
 
 @UserDecorators.to_json
 def locks(args):
@@ -207,6 +214,18 @@ licenses_parser.add_argument(
     "-db-id", dest="db_id", required=True, help="ID БД(INFOBASE)"
 )
 licenses_parser.set_defaults(func=licenses)
+
+# total_licenses
+total_licenses_parser = subparsers.add_parser(
+    "total_licenses", 
+    help="Общее количество лицензий во всех базах кластера", 
+    parents=[argparse.ArgumentParser(add_help=False)]
+)
+total_licenses_parser.add_argument("-s", dest="hostname", required=True, help="-s hostname | ip")
+total_licenses_parser.add_argument("-cls-user", dest="cls_user", default=None, help="Имя администратора кластера 1С")
+total_licenses_parser.add_argument("-cls-pwd", dest="cls_pwd", default=None, help="пароль администратора кластера 1С")
+total_licenses_parser.add_argument("--rac-path", dest="rac_path", default=None, help="Полный путь к rac.exe")
+total_licenses_parser.set_defaults(func=total_licenses)
 
 # locks
 locks_parser = subparsers.add_parser(
