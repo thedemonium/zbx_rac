@@ -1,13 +1,20 @@
 #!/bin/env python3
 # -*- coding: utf-8 -*-
-# version 0.9
+# version 0.9.1
 
 import argparse
+import json
+import logging
+import sys
 
 from typing import Dict, List, Union, NamedTuple, Any
 from collections import Counter
 
 from lib_rac import Client1C, UserDecorators
+
+logger = logging.getLogger("zbx_rac")
+logger.addHandler(logging.StreamHandler(sys.stderr))
+logger.setLevel(logging.DEBUG)
 
 
 def discovery(args):
@@ -249,4 +256,13 @@ if __name__ == "__main__":
     if not vars(args).get("func"):
         parser.print_usage()
     else:
-        print(args.func(args))
+        try:
+            print(args.func(args))
+        except SystemExit:
+            raise
+        except Exception as e:
+            logger.error("Ошибка выполнения: %s", e, exc_info=True)
+            if vars(args).get("func") is discovery:
+                print(json.dumps({"data": []}))
+            else:
+                print(json.dumps({}))
