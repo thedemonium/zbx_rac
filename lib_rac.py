@@ -319,6 +319,8 @@ class Client1C:
 
     @staticmethod
     def _row_output_to_dict(output: str) -> ListRac:
+        # Нормализуем CRLF → LF, чтобы split("\n\n") корректно делил блоки
+        output = output.replace("\r\n", "\n")
         result = []
         for block in output.split("\n\n"):
             if block:
