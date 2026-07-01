@@ -199,12 +199,12 @@ class Client1C:
         return None
 
     def get_cluster_id(self) -> str:
-        command = "cluster list --agent={}".format(self.hostname)
+        command = "cluster list {}".format(self.hostname)
         result = self._exec_rac(command)
         return result[0]["cluster"]
 
     def get_db_list(self) -> ListRac:
-        command = "infobase --cluster={} summary list --agent={}".format(
+        command = "infobase --cluster={} summary list {}".format(
             self.cluster_id, self.hostname
         )
         if self.cls_user and self.cls_pwd:
@@ -215,7 +215,7 @@ class Client1C:
         return result
 
     def get_session_list(self, db_id: str) -> ListRac:
-        command = "session --cluster={} list --infobase={} --agent={}".format(
+        command = "session --cluster={} list --infobase={} {}".format(
             self.cluster_id, db_id, self.hostname
         )
         if self.cls_user and self.cls_pwd:
@@ -226,7 +226,7 @@ class Client1C:
         return result
 
     def get_lock_list(self, db_id: str) -> ListRac:
-        command = "lock --cluster={} list --infobase={} --agent={}".format(
+        command = "lock --cluster={} list --infobase={} {}".format(
             self.cluster_id, db_id, self.hostname
         )
         if self.cls_user and self.cls_pwd:
@@ -237,7 +237,7 @@ class Client1C:
         return result
 
     def get_license_list(self, db_id: str) -> ListRac:
-        command = "session --cluster={} list --infobase={} --agent={} --licenses".format(
+        command = "session --cluster={} list --infobase={} {} --licenses".format(
             self.cluster_id, db_id, self.hostname
         )
         if self.cls_user and self.cls_pwd:
@@ -253,7 +253,7 @@ class Client1C:
         user_name: Union[str, None] = None,
         user_pwd: Union[str, None] = None,
     ) -> ListRac:
-        command = "infobase --cluster={} info --infobase={} --agent={}".format(
+        command = "infobase --cluster={} info --infobase={} {}".format(
             self.cluster_id, db_id, self.hostname
         )
         if self.cls_user and self.cls_pwd:
@@ -268,7 +268,7 @@ class Client1C:
         return result
 
     def get_process_list(self) -> ListRac:
-        command = "process --cluster={} list --agent={}".format(
+        command = "process --cluster={} list {}".format(
             self.cluster_id, self.hostname
         )
         if self.cls_user and self.cls_pwd:
