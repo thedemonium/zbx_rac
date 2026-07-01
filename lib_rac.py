@@ -290,16 +290,36 @@ class Client1C:
             cmd_list,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            encoding="utf-8",
         )
-        if result.stderr:
-            err = "Error subprocess.run, cmd: {}, Error:{}".format(
-                cmd_list, result.stderr
+        # rac.exe на русской Windows выводит в cp866, не в UTF-8
+        stdout_text = self._decode_output(result.stdout)
+        stderr_text = self._decode_output(result.stderr)
+        if stderr_text.strip():
+            err = "Error subprocess.run, cmd: {}, Error: {}".format(
+                cmd_list, stderr_text.strip()
             )
             logger.error(err)
             raise IOError(err)
-        else:
-            return Client1C._row_output_to_dict(result.stdout)
+        if not stdout_text.strip():
+            raise IOError(
+                "Пустой вывод от rac, cmd: {}".format(" ".join(cmd_list))
+            )
+        return Client1C._row_output_to_dict(stdout_text)
+
+    @staticmethod
+    def _decode_output(raw: bytes) -> str:
+        """Декодировать вывод rac.exe с подбором кодировки.
+
+        На русской Windows rac.exe использует cp866 (OEM-кодировка консоли).
+        Пробуем cp866 → cp1251 → utf-8.
+        """
+        for enc in ("cp866", "cp1251", "utf-8"):
+            try:
+                return raw.decode(enc)
+            except (UnicodeDecodeError, LookupError):
+                continue
+        # Финальный fallback с заменой неразбираемых символов
+        return raw.decode("utf-8", errors="replace")
 
     @staticmethod
     def _row_output_to_dict(output: str) -> ListRac:
