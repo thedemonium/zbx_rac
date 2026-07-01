@@ -248,6 +248,18 @@ class Client1C:
         result = self._exec_rac(command)
         return result
 
+    def get_cluster_locks(self) -> ListRac:
+        """Получить список всех блокировок кластера (без привязки к конкретной ИБ)."""
+        command = "lock --cluster={} list {}".format(
+            self.cluster_id, self.hostname
+        )
+        if self.cls_user and self.cls_pwd:
+            command += " --cluster-user={} --cluster-pwd={}".format(
+                self.cls_user, self.cls_pwd
+            )
+        result = self._exec_rac(command)
+        return result
+
     def get_license_list(self, db_id: str) -> ListRac:
         command = "session --cluster={} list --infobase={} {} --licenses".format(
             self.cluster_id, db_id, self.hostname

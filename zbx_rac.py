@@ -68,6 +68,12 @@ def locks(args):
     lock = server.get_lock_list(args.db_id)
     return len(lock)
 
+@UserDecorators.to_json
+def total_locks(args):
+    """Возвращает общее количество блокировок во всех базах кластера."""
+    server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
+    locks = server.get_cluster_locks()
+    return len(locks)
 
 @UserDecorators.to_json
 def db_info(args):
@@ -269,6 +275,18 @@ info_parser.add_argument(
     help="Пароль администратора базы 1С",
 )
 info_parser.set_defaults(func=db_info)
+
+# total_locks
+total_locks_parser = subparsers.add_parser(
+    "total_locks", 
+    help="Общее количество блокировок во всех базах кластера", 
+    parents=[argparse.ArgumentParser(add_help=False)]
+)
+total_locks_parser.add_argument("-s", dest="hostname", required=True, help="-s hostname | ip")
+total_locks_parser.add_argument("-cls-user", dest="cls_user", default=None, help="Имя администратора кластера 1С")
+total_locks_parser.add_argument("-cls-pwd", dest="cls_pwd", default=None, help="пароль администратора кластера 1С")
+total_locks_parser.add_argument("--rac-path", dest="rac_path", default=None, help="Полный путь к rac.exe")
+total_locks_parser.set_defaults(func=total_locks)
 
 if __name__ == "__main__":
     args = parser.parse_args()
