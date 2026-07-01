@@ -35,6 +35,13 @@ def session(args):
         result.update(dict(_))
     return result
 
+@UserDecorators.to_json
+def total_sessions(args):
+    """Возвращает общее количество сессий во всех базах кластера."""
+    server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
+    sessions = server.get_cluster_sessions()
+    return len(sessions)
+
 
 @UserDecorators.to_json
 def process(args):
@@ -218,6 +225,18 @@ locks_parser.add_argument(
     "-db-id", dest="db_id", required=True, help="ID БД(INFOBASE)"
 )
 locks_parser.set_defaults(func=locks)
+
+# total_sessions
+total_sessions_parser = subparsers.add_parser(
+    "total_sessions", 
+    help="Общее количество сессий во всех базах кластера", 
+    parents=[argparse.ArgumentParser(add_help=False)]
+)
+total_sessions_parser.add_argument("-s", dest="hostname", required=True, help="-s hostname | ip")
+total_sessions_parser.add_argument("-cls-user", dest="cls_user", default=None, help="Имя администратора кластера 1С")
+total_sessions_parser.add_argument("-cls-pwd", dest="cls_pwd", default=None, help="пароль администратора кластера 1С")
+total_sessions_parser.add_argument("--rac-path", dest="rac_path", default=None, help="Полный путь к rac.exe")
+total_sessions_parser.set_defaults(func=total_sessions)
 
 # info
 info_parser = subparsers.add_parser(
