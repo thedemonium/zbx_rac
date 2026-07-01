@@ -300,10 +300,6 @@ class Client1C:
             )
             logger.error(err)
             raise IOError(err)
-        if not stdout_text.strip():
-            raise IOError(
-                "Пустой вывод от rac, cmd: {}".format(" ".join(cmd_list))
-            )
         return Client1C._row_output_to_dict(stdout_text)
 
     @staticmethod
@@ -331,7 +327,7 @@ class Client1C:
                     if ":" not in line:
                         continue
                     k, v = line.split(":", maxsplit=1)
-                    k, v = k.strip(), v.strip("\"' ")
+                    k, v = k.strip(), v.strip("\"' \r")
                     dict_block[k] = v
                 if dict_block:
                     result.append(dict_block)
