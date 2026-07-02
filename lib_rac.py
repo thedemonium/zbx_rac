@@ -283,6 +283,27 @@ class Client1C:
         result = self._exec_rac(command)
         return result
 
+    def get_installed_licenses(self) -> ListRac:
+        """Получить список всех установленных (зарегистрированных) лицензий кластера.
+
+        Использует 'rac license list', который возвращает все лицензии,
+        зарегистрированные в менеджере лицензий кластера, включая как
+        используемые, так и свободные. Каждая запись содержит поля:
+            license-type  — тип лицензии (HASP, soft и др.)
+            key-series    — серия ключа / регистрационный номер
+            present       — наличие лицензии (yes/no)
+            max-users-all — максимальное количество пользователей
+        """
+        command = "license --cluster={} list {}".format(
+            self.cluster_id, self.hostname
+        )
+        if self.cls_user and self.cls_pwd:
+            command += " --cluster-user={} --cluster-pwd={}".format(
+                self.cls_user, self.cls_pwd
+            )
+        result = self._exec_rac(command)
+        return result
+
     def get_db_info(
         self,
         db_id: str,

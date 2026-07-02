@@ -70,6 +70,28 @@ def total_licenses(args):
 
 
 @UserDecorators.to_json
+def installed_licenses(args):
+    """Возвращает общее количество установленных лицензий кластера."""
+    server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
+    lic = server.get_installed_licenses()
+    # Суммируем max-users-all по всем лицензиям, где present=yes
+    total = sum(
+        int(x.get("max-users-all", 0))
+        for x in lic
+        if x.get("present", "no").lower() == "yes"
+    )
+    return total
+
+
+@UserDecorators.to_json
+def installed_licenses_detail(args):
+    """Возвращает детальную информацию по всем установленным лицензиям кластера."""
+    server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
+    lic = server.get_installed_licenses()
+    return lic
+
+
+@UserDecorators.to_json
 def locks(args):
     server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
     lock = server.get_lock_list(args.db_id)
@@ -226,6 +248,30 @@ total_licenses_parser.add_argument("-cls-user", dest="cls_user", default=None, h
 total_licenses_parser.add_argument("-cls-pwd", dest="cls_pwd", default=None, help="пароль администратора кластера 1С")
 total_licenses_parser.add_argument("--rac-path", dest="rac_path", default=None, help="Полный путь к rac.exe")
 total_licenses_parser.set_defaults(func=total_licenses)
+
+# installed_licenses
+installed_licenses_parser = subparsers.add_parser(
+    "installed_licenses",
+    help="Общее количество установленных лицензий кластера (всех, включая свободные)",
+    parents=[argparse.ArgumentParser(add_help=False)]
+)
+installed_licenses_parser.add_argument("-s", dest="hostname", required=True, help="-s hostname | ip")
+installed_licenses_parser.add_argument("-cls-user", dest="cls_user", default=None, help="Имя администратора кластера 1С")
+installed_licenses_parser.add_argument("-cls-pwd", dest="cls_pwd", default=None, help="пароль администратора кластера 1С")
+installed_licenses_parser.add_argument("--rac-path", dest="rac_path", default=None, help="Полный путь к rac.exe")
+installed_licenses_parser.set_defaults(func=installed_licenses)
+
+# installed_licenses_detail
+installed_licenses_detail_parser = subparsers.add_parser(
+    "installed_licenses_detail",
+    help="Детальная информация по всем установленным лицензиям кластера",
+    parents=[argparse.ArgumentParser(add_help=False)]
+)
+installed_licenses_detail_parser.add_argument("-s", dest="hostname", required=True, help="-s hostname | ip")
+installed_licenses_detail_parser.add_argument("-cls-user", dest="cls_user", default=None, help="Имя администратора кластера 1С")
+installed_licenses_detail_parser.add_argument("-cls-pwd", dest="cls_pwd", default=None, help="пароль администратора кластера 1С")
+installed_licenses_detail_parser.add_argument("--rac-path", dest="rac_path", default=None, help="Полный путь к rac.exe")
+installed_licenses_detail_parser.set_defaults(func=installed_licenses_detail)
 
 # locks
 locks_parser = subparsers.add_parser(
