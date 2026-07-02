@@ -1,0 +1,48 @@
+zabbix_export:
+  version: '5.4'
+  date: '2026-07-02T08:32:27Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: f0ff5a59a4334b62ab8508b9840a0b22
+      template: 'Template 1C Cluster'
+      name: 'Template 1C Cluster'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: 9a658a29b0474a448f9d36259e56d23a
+          name: '1C Cluster: Total licenses'
+          key: 'zbx_rac.py["total_licenses", "-s", "{$1C.CLUSTER}"]'
+          delay: 10m
+          units: лицензий
+        -
+          uuid: 18371505911245c79d4010804e938eef
+          name: '1C Cluster: Total locks'
+          key: 'zbx_rac.py["total_locks", "-s", "{$1C.CLUSTER}"]'
+          delay: 3m
+          units: блокировок
+        -
+          uuid: 98e6260104ba4e9ca7a69e727394ed91
+          name: '1C Cluster: Total user sessions'
+          key: 'zbx_rac.py["total_sessions", "-s", "{$1C.CLUSTER}"]'
+          delay: 5m
+          units: сессий
+      discovery_rules:
+        -
+          uuid: 1e1121e2865e4f68ab89a4e09d3b243f
+          name: '1C RAC: Discovery databases'
+          key: 'zbx_rac.py["discovery", "-s", "{$1C.CLUSTER}"]'
+          delay: 1h
+          item_prototypes:
+            -
+              uuid: b15b5cc8610149afa708ec7eaa2bbf80
+              name: '1C Base: {#NAME} (Status)'
+              key: 'zbx_rac.py["status", "-s", "{$1C.CLUSTER}", "-i", "{#INFOBASE}"]'
+              delay: 1h
+              trends: '0'
+              value_type: TEXT
