@@ -294,7 +294,7 @@ class Client1C:
             present       — наличие лицензии (yes/no)
             max-users-all — максимальное количество пользователей
         """
-        command = "license --cluster={} list {}".format(
+        command = "license list --cluster={} {}".format(
             self.cluster_id, self.hostname
         )
         if self.cls_user and self.cls_pwd:
