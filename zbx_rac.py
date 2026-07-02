@@ -71,24 +71,52 @@ def total_licenses(args):
 
 @UserDecorators.to_json
 def installed_licenses(args):
-    """Возвращает общее количество установленных лицензий кластера."""
+    """Возвращает суммарное количество клиентских лицензий кластера.
+
+    Клиентская лицензия — это лицензия, полученная клиентским приложением
+    напрямую (issued-by-server=no). Список сессий с лицензиями может
+    содержать дубли (одна лицензия на несколько сессий), поэтому
+    дедуплицируем по полю series и суммируем max-users-all.
+    """
     server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
-    lic = server.get_installed_licenses()
-    # Суммируем max-users-all по всем лицензиям, где present=yes
-    total = sum(
-        int(x.get("max-users-all", 0))
-        for x in lic
-        if x.get("present", "no").lower() == "yes"
-    )
+    lic = server.get_cluster_licenses()
+    # Фильтруем клиентские лицензии, дедуплицируем по series, суммируем max-users-all
+    seen_series = set()
+    total = 0
+    for x in lic:
+        if x.get("issued-by-server", "").lower() != "no":
+            continue
+        series = x.get("series", "")
+        if series in seen_series:
+            continue
+        seen_series.add(series)
+        total += int(x.get("max-users-all", 0))
     return total
 
 
 @UserDecorators.to_json
 def installed_licenses_detail(args):
-    """Возвращает детальную информацию по всем установленным лицензиям кластера."""
+    """Возвращает детальную информацию по всем клиентским лицензиям кластера
+    (дедуплицированную по серии ключа)."""
     server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
-    lic = server.get_installed_licenses()
-    return lic
+    lic = server.get_cluster_licenses()
+    seen_series = set()
+    result = []
+    for x in lic:
+        if x.get("issued-by-server", "").lower() != "no":
+            continue
+        series = x.get("series", "")
+        if series in seen_series:
+            continue
+        seen_series.add(series)
+        result.append({
+            "series": series,
+            "license-type": x.get("license-type", ""),
+            "max-users-all": x.get("max-users-all", ""),
+            "short-presentation": x.get("short-presentation", ""),
+            "full-name": x.get("full-name", ""),
+        })
+    return result
 
 
 @UserDecorators.to_json
