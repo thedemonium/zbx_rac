@@ -71,21 +71,19 @@ def total_licenses(args):
 
 @UserDecorators.to_json
 def installed_licenses(args):
-    """Возвращает суммарное количество клиентских лицензий кластера.
+    """Возвращает суммарное количество установленных лицензий кластера.
 
-    Клиентская лицензия — это лицензия, полученная клиентским приложением
-    напрямую (issued-by-server=no). Список сессий с лицензиями может
-    содержать дубли (одна лицензия на несколько сессий), поэтому
+    Учитываются все типы лицензий: клиентские (soft, issued-by-server=no)
+    и серверные (HASP/USB, issued-by-server=yes). Список сессий с лицензиями
+    может содержать дубли (одна лицензия на несколько сессий), поэтому
     дедуплицируем по полю series и суммируем max-users-all.
     """
     server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
     lic = server.get_cluster_licenses()
-    # Фильтруем клиентские лицензии, дедуплицируем по series, суммируем max-users-all
+    # Дедуплицируем по series, суммируем max-users-all по всем лицензиям
     seen_series = set()
     total = 0
     for x in lic:
-        if x.get("issued-by-server", "").lower() != "no":
-            continue
         series = x.get("series", "")
         if series in seen_series:
             continue
@@ -96,15 +94,13 @@ def installed_licenses(args):
 
 @UserDecorators.to_json
 def installed_licenses_detail(args):
-    """Возвращает детальную информацию по всем клиентским лицензиям кластера
-    (дедуплицированную по серии ключа)."""
+    """Возвращает детальную информацию по всем установленным лицензиям кластера
+    (дедуплицированную по серии ключа), включая клиентские и серверные."""
     server = Client1C(args.hostname, args.cls_user, args.cls_pwd, args.rac_path)
     lic = server.get_cluster_licenses()
     seen_series = set()
     result = []
     for x in lic:
-        if x.get("issued-by-server", "").lower() != "no":
-            continue
         series = x.get("series", "")
         if series in seen_series:
             continue
@@ -112,6 +108,7 @@ def installed_licenses_detail(args):
         result.append({
             "series": series,
             "license-type": x.get("license-type", ""),
+            "issued-by-server": x.get("issued-by-server", ""),
             "max-users-all": x.get("max-users-all", ""),
             "short-presentation": x.get("short-presentation", ""),
             "full-name": x.get("full-name", ""),
